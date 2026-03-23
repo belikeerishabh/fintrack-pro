@@ -25,14 +25,23 @@ function pinKey(digit) {
   if (pinBuffer.length >= 4) return;
   pinBuffer += digit;
   updateDots(pinBuffer, 'dot');
-  if (pinBuffer.length === 4) setTimeout(submitPin, 150);
+  updateEnterBtn();
+  // Auto-submit when 4 digits entered
+  if (pinBuffer.length === 4) setTimeout(submitPin, 200);
 }
 
 function pinBackspace() {
   if (!pinBuffer.length) return;
   pinBuffer = pinBuffer.slice(0, -1);
   updateDots(pinBuffer, 'dot');
+  updateEnterBtn();
   document.getElementById('pin-error').textContent = '';
+}
+
+function updateEnterBtn() {
+  const btn = document.getElementById('pin-enter-btn');
+  if (!btn) return;
+  btn.disabled = pinBuffer.length < 4;
 }
 
 function updateDots(val, prefix) {
@@ -45,11 +54,15 @@ function updateDots(val, prefix) {
 }
 
 function submitPin() {
+  if (!pinBuffer || pinBuffer.length < 4) return;
   if (hashPin(pinBuffer) === DB.settings.pin) {
+    // Correct PIN — open app
     pinBuffer = '';
+    updateDots('', 'dot');
+    updateEnterBtn();
     showScreen('screen-app');
   } else {
-    // Shake dots red
+    // Wrong PIN — shake red, clear, let retry
     for (let i = 0; i < 4; i++) {
       const d = document.getElementById(`dot-${i}`);
       if (d) { d.classList.remove('filled'); d.classList.add('error'); }
@@ -63,6 +76,7 @@ function submitPin() {
       document.getElementById('pin-error').textContent = '';
     }, 900);
     pinBuffer = '';
+    updateEnterBtn();
   }
 }
 
@@ -202,6 +216,8 @@ render();
 if (DB.settings.pinEnabled && DB.settings.pin) {
   showScreen('screen-pin');
   pinBuffer = '';
+  // Disable enter button until 4 digits entered
+  setTimeout(() => updateEnterBtn(), 100);
 } else {
   showScreen('screen-app');
 }
