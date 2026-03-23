@@ -46,6 +46,8 @@ function loadLocal() {
       if (!DB.banks || !DB.banks.length) {
         DB.banks = [{ id: 'cash', name: 'Cash', type: 'Cash', accountNumber: '', ifsc: '', openingBalance: 0 }];
       }
+      // Ensure invoices array exists for older data
+      if (!DB.invoices) DB.invoices = [];
     } catch (e) { console.warn('DB parse error', e); }
   }
 }
