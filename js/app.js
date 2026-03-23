@@ -1,5 +1,5 @@
 /**
- * app.js — App bootstrap, PWA service worker registration
+ * app.js — App bootstrap, PWA service worker registration [FIXED v2]
  */
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
@@ -8,18 +8,19 @@ loadLocal();
 initDateSelectors();
 render();
 
-// Auto-connect Google Sheets if previously connected
-if (DB.settings.gConnected && DB.settings.gClientId) {
+// ALWAYS load Google scripts on page load so "Connect" works first time
+loadGoogleScripts();
+
+// Show sync button if previously connected
+if (DB.settings.gConnected) {
   setSyncBadge('syncing');
   document.getElementById('sheetsSyncBtn').style.display = 'inline-flex';
-  loadGoogleScripts();
 }
 
-// ── SERVICE WORKER (PWA offline support) ──────────────────────────────────────
+// ── SERVICE WORKER ────────────────────────────────────────────────────────────
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {
-    // Fallback: inline blob SW if sw.js isn't found (e.g. local file:// usage)
     const swCode = `
       const CACHE = 'fintrack-v1';
       self.addEventListener('install', e =>
