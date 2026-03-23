@@ -1,22 +1,29 @@
 /**
- * db.js — Data model, localStorage persistence
+ * db.js — Data model + localStorage [v4]
  */
 
-const DKEY = 'fintrack_pro_v3';
+const DKEY = 'fintrack_pro_v4';
 
 let DB = {
   settings: {
-    businessName: '',
+    businessName: 'Rishabh Sacheti',
+    businessTitle: 'Freelance Graphic Designer',
     address: '',
-    phone: '',
-    email: '',
+    phone: '+91 8302786214',
+    email: 'sacheti.rishabh.09@gmail.com',
     gstin: '',
+    pan: '',
     invoicePrefix: 'INV',
     nextInvNo: 1,
     gClientId: '',
     gSheetId: '',
     gConnected: false,
+    pin: '',
+    pinEnabled: false,
   },
+  banks: [
+    { id: 'cash', name: 'Cash', type: 'Cash', accountNo: '', ifsc: '', openingBalance: 0 },
+  ],
   income:      [],
   expenses:    [],
   clients:     [],
@@ -29,7 +36,15 @@ let DB = {
 function loadLocal() {
   const raw = localStorage.getItem(DKEY);
   if (raw) {
-    try { DB = JSON.parse(raw); } catch (e) { console.warn('DB parse error', e); }
+    try {
+      const parsed = JSON.parse(raw);
+      // Deep merge to preserve new default fields
+      DB = { ...DB, ...parsed };
+      DB.settings = { ...DB.settings, ...(parsed.settings || {}) };
+      if (!DB.banks || !DB.banks.length) {
+        DB.banks = [{ id: 'cash', name: 'Cash', type: 'Cash', accountNo: '', ifsc: '', openingBalance: 0 }];
+      }
+    } catch (e) { console.warn('DB parse error', e); }
   }
 }
 

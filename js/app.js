@@ -1,10 +1,16 @@
 /**
- * app.js — App bootstrap [FIXED v3]
+ * app.js [v4] — Boot + PIN check + PWA
  */
-
 loadLocal();
 initDateSelectors();
 render();
+
+// PIN check on load
+if (DB.settings.pinEnabled && DB.settings.pin) {
+  showPinScreen();
+} else {
+  hidePinScreen();
+}
 
 if (DB.settings.gConnected) {
   setSyncBadge('syncing');

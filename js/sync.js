@@ -104,7 +104,7 @@ function gapiLoaded() {
 function buildTokenClient(clientId, silent = false) {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: clientId,
-    scope: 'https://www.googleapis.com/auth/spreadsheets',
+    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/gmail.send',
     callback: async (resp) => {
       if (resp.error) {
         toast('Sign-in failed: ' + resp.error, 'error');
