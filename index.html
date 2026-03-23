@@ -6,7 +6,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="theme-color" content="#0c0f1a"/>
-  <meta name="description" content="FinTrack Pro – Freelancer Finance Tracker"/>
   <title>FinTrack Pro</title>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="assets/icon-192.svg"/>
@@ -18,132 +17,126 @@
 </head>
 <body>
 
-<!-- ═══════════ LOCK SCREEN ═══════════ -->
-<div id="lockScreen" class="lock-screen">
-  <div class="lock-box">
-    <div class="lock-logo">FinTrack<span>Pro</span></div>
-    <div class="lock-subtitle" id="lockSubtitle">Enter your PIN</div>
-    <div class="pin-dots" id="pinDots">
-      <span class="pin-dot" id="d0"></span>
-      <span class="pin-dot" id="d1"></span>
-      <span class="pin-dot" id="d2"></span>
-      <span class="pin-dot" id="d3"></span>
+<!-- ═══════════ PIN LOCK SCREEN ═══════════ -->
+<div id="screen-pin" class="fullscreen-overlay" style="display:none">
+  <div class="pin-card">
+    <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);margin-bottom:4px">FinTrack Pro</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:28px">Enter your PIN to continue</div>
+
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="dot-0"></div>
+      <div class="pin-dot" id="dot-1"></div>
+      <div class="pin-dot" id="dot-2"></div>
+      <div class="pin-dot" id="dot-3"></div>
     </div>
-    <div class="pin-error" id="pinError"></div>
-    <div class="pin-pad">
-      <button class="pin-btn" onclick="pinPress('1')">1</button>
-      <button class="pin-btn" onclick="pinPress('2')">2</button>
-      <button class="pin-btn" onclick="pinPress('3')">3</button>
-      <button class="pin-btn" onclick="pinPress('4')">4</button>
-      <button class="pin-btn" onclick="pinPress('5')">5</button>
-      <button class="pin-btn" onclick="pinPress('6')">6</button>
-      <button class="pin-btn" onclick="pinPress('7')">7</button>
-      <button class="pin-btn" onclick="pinPress('8')">8</button>
-      <button class="pin-btn" onclick="pinPress('9')">9</button>
-      <button class="pin-btn pin-del" onclick="pinDelete()">⌫</button>
-      <button class="pin-btn" onclick="pinPress('0')">0</button>
-      <button class="pin-btn pin-ok" onclick="pinConfirm()">✓</button>
+
+    <div id="pin-error" style="color:var(--red);font-size:12px;margin:10px 0;height:16px;text-align:center"></div>
+
+    <div class="pin-numpad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key pin-key-empty"></button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key pin-key-del" onclick="pinBackspace()">⌫</button>
     </div>
-    <button class="pin-skip" id="pinSkipBtn" onclick="skipPin()" style="display:none">Skip (set PIN later in Settings)</button>
+
+    <button class="btn btn-outline btn-sm" style="margin-top:22px;font-size:12px;color:var(--muted)" onclick="openForgotPin()">
+      Forgot PIN?
+    </button>
   </div>
 </div>
 
-<!-- PIN LOCK SCREEN -->
-<div id="pin-lock" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:20px">
-  <div style="font-family:Playfair Display,serif;font-size:24px;color:var(--gold)">FinTrack Pro</div>
-  <div style="font-size:14px;color:var(--muted)">Enter your PIN to continue</div>
-  <input id="pin-input" type="password" maxlength="4" inputmode="numeric" placeholder="····"
-    style="background:var(--s2);border:2px solid var(--border);color:var(--text);padding:14px 20px;border-radius:12px;font-size:28px;text-align:center;width:140px;letter-spacing:8px;outline:none"
-    onkeyup="if(this.value.length===4)checkPin()" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'"/>
-  <div id="pin-error" style="color:var(--red);font-size:13px;height:18px"></div>
-  <button class="btn btn-gold" onclick="checkPin()">Unlock</button>
+<!-- ═══════════ FORGOT PIN SCREEN ═══════════ -->
+<div id="screen-forgot-pin" class="fullscreen-overlay" style="display:none">
+  <div class="pin-card">
+    <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--gold);margin-bottom:20px">Reset PIN</div>
+
+    <!-- Step 1: Send code -->
+    <div id="forgot-step-1">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px;text-align:center">A 6-digit code will be sent to</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:20px;text-align:center" id="forgot-email-display"></div>
+      <button class="btn btn-gold" id="send-code-btn" onclick="sendResetCode()">Send Code to Gmail</button>
+      <div id="send-code-status" style="font-size:12px;color:var(--muted);margin-top:10px;min-height:16px;text-align:center"></div>
+    </div>
+
+    <!-- Step 2: Enter code -->
+    <div id="forgot-step-2" style="display:none">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;text-align:center">Enter the 6-digit code<br/>sent to your Gmail</div>
+      <input id="reset-code-input" type="text" maxlength="6" inputmode="numeric" placeholder="000000"
+        style="background:var(--s2);border:2px solid var(--border);color:var(--text);padding:12px 16px;border-radius:10px;font-size:24px;text-align:center;width:180px;letter-spacing:6px;outline:none;display:block;margin:0 auto 16px;font-family:'DM Sans',sans-serif"/>
+      <button class="btn btn-gold" onclick="verifyResetCode()">Verify Code</button>
+    </div>
+
+    <!-- Step 3: Set new PIN -->
+    <div id="forgot-step-3" style="display:none">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;text-align:center">Set your new 4-digit PIN</div>
+      <div class="pin-dots" id="new-pin-dots">
+        <div class="pin-dot" id="ndot-0"></div>
+        <div class="pin-dot" id="ndot-1"></div>
+        <div class="pin-dot" id="ndot-2"></div>
+        <div class="pin-dot" id="ndot-3"></div>
+      </div>
+      <div style="height:10px"></div>
+      <div class="pin-numpad">
+        <button class="pin-key" onclick="newPinKey('1')">1</button>
+        <button class="pin-key" onclick="newPinKey('2')">2</button>
+        <button class="pin-key" onclick="newPinKey('3')">3</button>
+        <button class="pin-key" onclick="newPinKey('4')">4</button>
+        <button class="pin-key" onclick="newPinKey('5')">5</button>
+        <button class="pin-key" onclick="newPinKey('6')">6</button>
+        <button class="pin-key" onclick="newPinKey('7')">7</button>
+        <button class="pin-key" onclick="newPinKey('8')">8</button>
+        <button class="pin-key" onclick="newPinKey('9')">9</button>
+        <button class="pin-key pin-key-empty"></button>
+        <button class="pin-key" onclick="newPinKey('0')">0</button>
+        <button class="pin-key pin-key-del" onclick="newPinBackspace()">⌫</button>
+      </div>
+    </div>
+
+    <div id="forgot-error" style="color:var(--red);font-size:12px;margin-top:10px;min-height:16px;text-align:center"></div>
+    <button class="btn btn-outline btn-sm" style="margin-top:16px;font-size:12px" onclick="showScreen('screen-pin')">← Back to PIN</button>
+  </div>
 </div>
 
-<div id="app-content">
-<!-- PIN LOCK SCREEN -->
-<div id="pin-screen" style="display:none">
-  <div class="pin-logo">FinTrack Pro</div>
-  <div style="color:var(--muted);font-size:13px">Enter your PIN to continue</div>
-  <div class="pin-display" id="pin-display">○○○○</div>
-  <div class="pin-error" id="pin-error"></div>
-  <div class="pin-grid">
-    <button class="pin-btn" onclick="pinKey('1')">1</button>
-    <button class="pin-btn" onclick="pinKey('2')">2</button>
-    <button class="pin-btn" onclick="pinKey('3')">3</button>
-    <button class="pin-btn" onclick="pinKey('4')">4</button>
-    <button class="pin-btn" onclick="pinKey('5')">5</button>
-    <button class="pin-btn" onclick="pinKey('6')">6</button>
-    <button class="pin-btn" onclick="pinKey('7')">7</button>
-    <button class="pin-btn" onclick="pinKey('8')">8</button>
-    <button class="pin-btn" onclick="pinKey('9')">9</button>
-    <button class="pin-btn" style="visibility:hidden"></button>
-    <button class="pin-btn" onclick="pinKey('0')">0</button>
-    <button class="pin-btn" onclick="pinKey('del')">⌫</button>
-  </div>
-</div>
-<div id="app-content">
-<!-- ═══════════ HEADER ═══════════ -->
-<!-- ══ PIN LOCK SCREEN ══ -->
-<div id="pin-screen" style="display:none;position:fixed;inset:0;z-index:1000;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:20px">
-  <div style="font-family:'Playfair Display',serif;font-size:26px;color:var(--gold)">FinTrack<span style="color:var(--muted2);font-size:16px;font-family:'DM Sans',sans-serif;font-weight:400"> Pro</span></div>
-  <div style="font-size:14px;color:var(--muted)">Enter your PIN to continue</div>
-  <input id="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="• • • •"
-    style="text-align:center;font-size:28px;letter-spacing:10px;background:var(--s2);border:2px solid var(--border2);color:var(--text);padding:14px 20px;border-radius:12px;width:200px;outline:none;font-family:'DM Sans',sans-serif"/>
-  <div id="pin-error" style="color:var(--red);font-size:13px;min-height:18px"></div>
-  <!-- Numpad -->
-  <div style="display:grid;grid-template-columns:repeat(3,64px);gap:10px">
-    <button class="pin-key" data-val="1" style="height:56px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-size:20px;font-weight:600;cursor:pointer">1</button>
-    <button class="pin-key" data-val="2" style="height:56px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-size:20px;font-weight:600;cursor:pointer">2</button>
-    <button class="pin-key" data-val="3" style="height:56px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-size:20px;font-weight:600;cursor:pointer">3</button>
-    <button class="pin-key" data-val="4" style="height:56px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-size:20px;font-weight:600;cursor:pointer">4</button>
-    <button class="pin-key" data-val="5" style="height:56px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-size:20px;font-weight:600;cursor:pointer">5</button>
-    <button class="pin-key" data-val="6" style="height:56px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-size:20px;font-weight:600;cursor:pointer">6</button>
-    <button class="pin-key" data-val="7" style="height:56px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-size:20px;font-weight:600;cursor:pointer">7</button>
-    <button class="pin-key" data-val="8" style="height:56px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-size:20px;font-weight:600;cursor:pointer">8</button>
-    <button class="pin-key" data-val="9" style="height:56px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-size:20px;font-weight:600;cursor:pointer">9</button>
-    <button class="pin-key" data-val="del" style="height:56px;border-radius:10px;background:var(--s3);border:1px solid var(--border2);color:var(--muted);font-size:16px;cursor:pointer;grid-column:1">⌫</button>
-    <button class="pin-key" data-val="0" style="height:56px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-size:20px;font-weight:600;cursor:pointer">0</button>
-    <button onclick="submitPin()" style="height:56px;border-radius:10px;background:var(--gold);border:none;color:#0c0f1a;font-size:16px;font-weight:700;cursor:pointer">OK</button>
-  </div>
-</div>
+<!-- ═══════════ MAIN APP ═══════════ -->
+<div id="screen-app" style="display:none">
 
 <div class="app-header">
   <div class="logo">FinTrack<span>Pro</span></div>
   <div class="header-right">
     <div id="syncBadge" class="sync-badge disconnected" onclick="openSettings()">☁ Not Synced</div>
-    <button class="icon-btn" onclick="lockApp()" title="Lock app">🔒</button>
     <button class="icon-btn" onclick="openSettings()" title="Settings">⚙</button>
   </div>
 </div>
 
-<!-- ═══════════ MAIN ═══════════ -->
 <div class="main">
-
   <div class="top-bar">
     <select id="monthSel" onchange="render()"></select>
     <select id="yearSel" onchange="render()"></select>
     <button class="btn btn-gold btn-sm" onclick="exportExcel()">⬇ Excel</button>
-    <label class="btn btn-outline btn-sm" style="cursor:pointer">⬆ Import Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"/></label>
-    <button class="btn btn-blue btn-sm" id="sheetsSyncBtn" onclick="sheetsManualSync()" style="display:none">↻ Sync Sheets</button>
+    <label class="btn btn-outline btn-sm" style="cursor:pointer">⬆ Import<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"/></label>
+    <button class="btn btn-blue btn-sm" id="sheetsSyncBtn" onclick="sheetsManualSync()" style="display:none">↻ Sync</button>
   </div>
 
-  <!-- SUMMARY CARDS -->
   <div class="summary-grid">
     <div class="sum-card inc"><div class="sum-lbl">Income</div><div class="sum-val inc" id="s-inc">₹0</div><div class="sum-sub" id="s-inc-sub">0 tx</div></div>
     <div class="sum-card exp"><div class="sum-lbl">Expenses</div><div class="sum-val exp" id="s-exp">₹0</div><div class="sum-sub" id="s-exp-sub">0 entries</div></div>
     <div class="sum-card inv"><div class="sum-lbl">Invested</div><div class="sum-val inv" id="s-inv">₹0</div><div class="sum-sub" id="s-inv-sub">0</div></div>
-    <div class="sum-card sav"><div class="sum-lbl">Net Savings</div><div class="sum-val sav" id="s-sav">₹0</div><div class="sum-sub" id="s-sav-sub">0% of income</div></div>
+    <div class="sum-card sav"><div class="sum-lbl">Net Savings</div><div class="sum-val sav" id="s-sav">₹0</div><div class="sum-sub" id="s-sav-sub">0%</div></div>
     <div class="sum-card ast"><div class="sum-lbl">Assets</div><div class="sum-val ast" id="s-ast">₹0</div><div class="sum-sub" id="s-ast-sub">0 items</div></div>
   </div>
 
-  <!-- BANK BALANCE CARDS -->
-  <div id="bankBalanceRow"></div>
-
-  <!-- PANELS -->
   <div id="panel-income" class="panel active">
     <div class="sec-hdr"><div class="sec-title">💰 Income</div><button class="btn btn-gold btn-sm" onclick="openModal('m-income')">+ Add Income</button></div>
     <div class="tbl-wrap"><table>
-      <thead><tr><th>Date</th><th>From Whom</th><th>Category</th><th>Method</th><th>Bank / Cash</th><th>Notes</th><th>Amount</th><th></th></tr></thead>
+      <thead><tr><th>Date</th><th>From Whom</th><th>Category</th><th>Method</th><th>Bank</th><th>Notes</th><th>Amount</th><th></th></tr></thead>
       <tbody id="tb-income"></tbody>
     </table></div>
   </div>
@@ -151,7 +144,7 @@
   <div id="panel-expense" class="panel">
     <div class="sec-hdr"><div class="sec-title">💸 Expenses</div><button class="btn btn-gold btn-sm" onclick="openModal('m-expense')">+ Add Expense</button></div>
     <div class="tbl-wrap"><table>
-      <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Method</th><th>Bank / Cash</th><th>Notes</th><th>Amount</th><th></th></tr></thead>
+      <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Method</th><th>Bank</th><th>Notes</th><th>Amount</th><th></th></tr></thead>
       <tbody id="tb-expense"></tbody>
     </table></div>
   </div>
@@ -175,7 +168,7 @@
     <div class="sec-hdr"><div class="sec-title">🏆 Assets</div><button class="btn btn-gold btn-sm" onclick="openModal('m-asset')">+ Add Asset</button></div>
     <div class="asset-grid" id="assetGrid"></div>
     <div class="tbl-wrap"><table>
-      <thead><tr><th>Asset</th><th>Type</th><th>Qty / Unit</th><th>Buy Price</th><th>Date</th><th>Cur Price/Unit</th><th>Cur Value</th><th>Gain/Loss</th><th></th></tr></thead>
+      <thead><tr><th>Asset</th><th>Type</th><th>Qty</th><th>Buy Price</th><th>Date</th><th>Cur Price</th><th>Cur Value</th><th>Gain/Loss</th><th></th></tr></thead>
       <tbody id="tb-assets"></tbody>
     </table></div>
   </div>
@@ -200,10 +193,8 @@
       </table></div>
     </div>
   </div>
-
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button class="nav-item active" onclick="switchTab('income',this)"><span class="nav-icon">💰</span>Income</button>
   <button class="nav-item" onclick="switchTab('expense',this)"><span class="nav-icon">💸</span>Expenses</button>
@@ -212,10 +203,10 @@
   <button class="nav-item" onclick="switchTab('invest',this)"><span class="nav-icon">📈</span>Invest</button>
 </div>
 
+</div><!-- /screen-app -->
+
 <div id="modals-container"></div>
 <div class="toast" id="toast"></div>
-</div><!-- /app-content -->
-
 
 <script src="js/db.js"></script>
 <script src="js/sync.js"></script>
