@@ -488,3 +488,302 @@ tr:hover td { background: rgba(255,255,255,.02); }
     font-family: Arial, sans-serif !important;
   }
 }
+
+/* ── PIN SCREEN ─────────────────────────────────────────────────────────────── */
+#pin-screen {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 24px;
+}
+.pin-logo { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--gold); }
+.pin-display {
+  font-size: 32px; letter-spacing: 16px; color: var(--gold);
+  min-width: 120px; text-align: center;
+}
+.pin-grid {
+  display: grid; grid-template-columns: repeat(3, 72px); gap: 12px;
+}
+.pin-btn {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--s2); border: 1px solid var(--border);
+  color: var(--text); font-size: 22px; font-weight: 600;
+  cursor: pointer; transition: .15s; font-family: 'DM Sans', sans-serif;
+}
+.pin-btn:hover { background: var(--s3); border-color: var(--gold); }
+.pin-btn:active { transform: scale(.92); }
+.pin-error { color: var(--red); font-size: 13px; min-height: 20px; }
+
+/* ── BANK TAG ────────────────────────────────────────────────────────────────── */
+.bank-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--s2); border-radius: 20px;
+  padding: 2px 9px; font-size: 11px; color: var(--muted2);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   INVOICE DESIGN — matches Rishabh's invoice exactly
+   ══════════════════════════════════════════════════════════════════════════════ */
+.inv-wrap {
+  background: #fff; color: #1a1a1a;
+  font-family: 'DM Sans', sans-serif; font-size: 13px;
+  padding: 48px 48px 40px; line-height: 1.5;
+  max-width: 794px; margin: 0 auto;
+}
+
+.inv-top-label {
+  text-align: center; font-size: 12px; letter-spacing: 2px;
+  text-transform: uppercase; color: #555; margin-bottom: 16px;
+}
+
+/* Header */
+.inv-header-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 20px;
+}
+.inv-sender-name  { font-size: 26px; font-weight: 700; color: #111; line-height: 1.1; }
+.inv-sender-title { font-size: 13px; color: #555; margin-top: 2px; }
+.inv-sender-contact { font-size: 12px; color: #444; margin-top: 6px; }
+.inv-meta-block   { text-align: right; }
+.inv-meta-row     { display: flex; justify-content: flex-end; gap: 16px; margin-bottom: 4px; }
+.inv-meta-label   { font-size: 12px; color: #777; }
+.inv-meta-val     { font-size: 13px; font-weight: 700; color: #111; min-width: 90px; text-align: right; }
+
+/* Divider */
+.inv-divider { border: none; border-top: 1.5px solid #111; margin: 16px 0; }
+
+/* Client block */
+.inv-client-block { margin-bottom: 8px; }
+.inv-client-row   { display: flex; gap: 16px; margin-bottom: 3px; font-size: 13px; }
+.inv-cl-label     { color: #555; min-width: 80px; }
+.inv-cl-val       { font-weight: 700; color: #111; }
+
+/* Items table */
+.inv-items-table {
+  width: 100%; border-collapse: collapse; margin-top: 4px;
+}
+.inv-thead-row th {
+  background: #1a1a1a; color: #fff;
+  padding: 10px 12px; font-size: 12px; font-weight: 600;
+  text-align: left;
+}
+.inv-th-center { text-align: center !important; }
+.inv-th-right  { text-align: right  !important; }
+.inv-item-row td {
+  padding: 9px 12px; border-bottom: 1px solid #e8e8e8;
+  font-size: 12.5px; vertical-align: top;
+}
+.inv-item-row:nth-child(even) td { background: #fafafa; }
+.inv-td-num    { width: 28px; color: #444; }
+.inv-td-desc   { }
+.inv-td-center { text-align: center; }
+.inv-td-right  { text-align: right; }
+
+/* Subtotal / Total */
+.inv-subtotal-row td { padding: 8px 12px; border: none; font-size: 12.5px; }
+.inv-subtotal-label { text-align: right; color: #555; }
+.inv-subtotal-val   { text-align: right; font-weight: 600; }
+.inv-total-row td   { padding: 8px 12px; border-top: 1.5px solid #111; }
+.inv-total-label    { text-align: right; font-weight: 700; font-size: 13px; }
+.inv-total-val      { text-align: right; font-weight: 700; font-size: 14px; }
+
+/* Amount in words */
+.inv-words-row {
+  text-align: right; font-size: 12px; color: #444; margin-top: 4px; font-style: italic;
+}
+.inv-words-label { margin-right: 6px; }
+.inv-words-val   { font-weight: 700; color: #111; font-style: normal; }
+
+/* Footer row */
+.inv-footer-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 8px;
+}
+.inv-balance-label  { font-size: 13px; color: #444; margin-bottom: 4px; }
+.inv-balance-amount { font-size: 28px; font-weight: 700; color: #111; margin-bottom: 8px; }
+.inv-balance-words-label { font-size: 11px; color: #555; font-style: italic; }
+.inv-balance-words  { font-size: 12px; font-weight: 700; color: #111; }
+.inv-bank-title     { font-size: 13px; color: #444; margin-bottom: 8px; }
+.inv-bank-row       { display: flex; gap: 8px; margin-bottom: 3px; font-size: 12px; }
+.inv-bank-label     { color: #555; font-style: italic; min-width: 110px; }
+.inv-bank-val       { font-weight: 700; color: #111; }
+
+.inv-thankyou {
+  text-align: center; font-size: 13px; color: #333; margin-top: 16px;
+}
+.inv-terms {
+  text-align: center; font-size: 11px; color: #777; margin-top: 6px;
+}
+
+/* ── PRINT STYLES ────────────────────────────────────────────────────────────── */
+@media print {
+  .app-header, .bottom-nav, .no-print, #pin-screen { display: none !important; }
+  .modal-overlay { position: static !important; display: block !important; background: none !important; padding: 0 !important; }
+  .modal { border: none !important; border-radius: 0 !important; max-height: none !important; }
+  .modal-hdr { display: none !important; }
+  .modal-body { padding: 0 !important; }
+  .main { display: none !important; }
+  body { background: white !important; }
+  .inv-wrap { padding: 16px !important; }
+}
+
+/* ── TOGGLE ──────────────────────────────────────────────────────────────────── */
+.toggle-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.toggle { width: 38px; height: 20px; background: var(--border); border-radius: 20px; position: relative; transition: .3s; flex-shrink: 0; }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; background: white; border-radius: 50%; transition: .3s; }
+.toggle.on { background: var(--green); }
+.toggle.on::after { left: 21px; }
+
+/* ── PIN NUMPAD ── */
+.pin-key {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--s2); border: 1px solid var(--border);
+  color: var(--text); font-size: 22px; font-weight: 500;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  transition: background .15s, transform .1s;
+  display: flex; align-items: center; justify-content: center;
+}
+.pin-key:active { background: var(--s3); transform: scale(.93); }
+.pin-key:hover  { background: var(--s3); border-color: var(--gold); }
+.pin-key-ghost  { background: transparent; border-color: transparent; }
+.pin-key-ghost:hover { background: transparent; border-color: transparent; color: var(--gold); }
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-8px); }
+  40%,80% { transform: translateX(8px); }
+}
+
+/* ── ONBOARDING ── */
+.onboard-step { animation: fadeIn .3s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── PIN LOCK ── */
+.pin-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--border2); background: transparent; transition: .2s;
+}
+.pin-dot.filled { background: var(--gold); border-color: var(--gold); }
+
+.pin-btn {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--s2); border: 1px solid var(--border);
+  color: var(--text); font-size: 22px; font-weight: 500;
+  cursor: pointer; transition: .15s; font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; justify-content: center;
+}
+.pin-btn:active { background: var(--gold); color: #0c0f1a; transform: scale(.95); }
+.pin-btn:hover  { border-color: var(--gold); color: var(--gold); }
+.pin-btn-del    { background: transparent; border-color: transparent; color: var(--muted); font-size: 20px; }
+.pin-btn-del:hover { color: var(--red); border-color: transparent; background: transparent; }
+
+/* ══════════════════════════════════════
+   FULLSCREEN OVERLAYS (onboarding, PIN)
+   ══════════════════════════════════════ */
+.fullscreen-overlay {
+  position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+
+/* ── ONBOARDING ── */
+.onboarding-card {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; max-width: 360px; width: 100%;
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 24px; padding: 40px 32px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.5);
+}
+.onboarding-logo {
+  width: 72px; height: 72px; background: var(--gold3);
+  border: 2px solid var(--gold); border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 34px; color: var(--gold); margin-bottom: 16px;
+}
+.onboarding-title {
+  font-family: 'Playfair Display', serif; font-size: 26px;
+  color: var(--gold); margin-bottom: 8px;
+}
+.onboarding-sub {
+  font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 24px;
+}
+.onboarding-features {
+  width: 100%; margin-bottom: 28px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.feature-item {
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px;
+  font-size: 13px; color: var(--muted2); text-align: left;
+}
+.btn-google-signin {
+  display: flex; align-items: center; gap: 10px;
+  background: white; color: #1a1a2e; border: none;
+  padding: 12px 24px; border-radius: 10px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  transition: .2s; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.btn-google-signin:hover { background: #f5f5f5; transform: translateY(-1px); }
+
+/* ── PIN CARD ── */
+.pin-card {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; max-width: 320px; width: 100%;
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 24px; padding: 36px 28px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.5);
+}
+
+/* ── PIN DOTS ── */
+.pin-dots {
+  display: flex; gap: 14px; margin-bottom: 8px;
+}
+.pin-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--border2); background: transparent;
+  transition: .2s;
+}
+.pin-dot.filled { background: var(--gold); border-color: var(--gold); }
+.pin-dot.error  { background: var(--red);  border-color: var(--red);  }
+
+/* ── PIN NUMPAD ── */
+.pin-numpad {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; margin-top: 12px; width: 100%; max-width: 240px;
+}
+.pin-key {
+  background: var(--s2); border: 1px solid var(--border);
+  color: var(--text); height: 58px; border-radius: 12px;
+  font-size: 20px; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: .15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.pin-key:hover  { background: var(--s3); border-color: var(--gold); }
+.pin-key:active { background: var(--gold3); transform: scale(.94); }
+.pin-key-del    { font-size: 18px; color: var(--muted2); }
+.pin-key-empty  { background: transparent; border: none; cursor: default; }
+.pin-key-empty:hover { background: transparent; border: none; transform: none; }
+
+/* ── PIN ENTER BUTTON ── */
+.pin-enter-btn {
+  margin-top: 16px;
+  width: 100%; max-width: 240px;
+  padding: 14px;
+  background: var(--gold);
+  color: #0c0f1a;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.pin-enter-btn:hover  { background: var(--gold2); }
+.pin-enter-btn:active { transform: scale(.96); }
+.pin-enter-btn:disabled {
+  background: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+}
