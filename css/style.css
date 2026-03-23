@@ -368,3 +368,123 @@ tr:hover td { background: rgba(255,255,255,.02); }
   .summary-grid    { grid-template-columns: 1fr 1fr; }
   .sum-val         { font-size: 17px; }
 }
+
+/* ═══════════════════════════════════════════════
+   LOCK SCREEN
+   ═══════════════════════════════════════════════ */
+
+.lock-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.lock-screen.hidden { display: none; }
+
+.lock-box {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 20px; width: 100%; max-width: 320px;
+}
+
+.lock-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px; color: var(--gold); text-align: center;
+}
+.lock-logo span { color: var(--muted2); font-size: 18px; font-family: 'DM Sans', sans-serif; }
+
+.lock-subtitle { font-size: 14px; color: var(--muted2); text-align: center; }
+
+.pin-dots {
+  display: flex; gap: 18px; justify-content: center;
+  margin: 8px 0;
+}
+.pin-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--border2); background: transparent;
+  transition: .2s;
+}
+.pin-dot.filled { background: var(--gold); border-color: var(--gold); }
+.pin-dot.error  { background: var(--red);  border-color: var(--red); }
+
+.pin-error {
+  font-size: 12px; color: var(--red); text-align: center;
+  min-height: 18px; transition: .2s;
+}
+
+.pin-pad {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; width: 100%;
+}
+.pin-btn {
+  background: var(--s1); border: 1px solid var(--border);
+  color: var(--text); font-size: 20px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  height: 64px; border-radius: var(--radius);
+  cursor: pointer; transition: .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.pin-btn:hover  { background: var(--s2); border-color: var(--gold); }
+.pin-btn:active { background: var(--s3); transform: scale(.96); }
+.pin-del { font-size: 18px; color: var(--muted2); }
+.pin-ok  { background: var(--gold); color: #0c0f1a; border-color: var(--gold); }
+.pin-ok:hover { background: var(--gold2); }
+
+.pin-skip {
+  font-size: 12px; color: var(--muted); background: transparent;
+  border: none; cursor: pointer; text-decoration: underline;
+  font-family: 'DM Sans', sans-serif; margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════════════
+   BANK BALANCE CARDS
+   ═══════════════════════════════════════════════ */
+
+.bank-balance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 9px; margin-bottom: 14px;
+}
+.bank-bal-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px;
+  position: relative; overflow: hidden;
+}
+.bank-bal-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--blue);
+}
+.bank-bal-card.cash::before { background: var(--green); }
+.bank-bal-card.wallet::before { background: var(--purple); }
+.bank-bal-card.credit::before { background: var(--red); }
+.bank-bal-name { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.bank-bal-type { font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+.bank-bal-amount { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500; color: var(--blue); }
+.bank-bal-card.cash .bank-bal-amount   { color: var(--green); }
+.bank-bal-card.wallet .bank-bal-amount { color: var(--purple); }
+.bank-bal-card.credit .bank-bal-amount { color: var(--red); }
+.bank-bal-opening { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+/* ── INVOICE PRINT STYLES ── */
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .app-header, .bottom-nav, .no-print, .modal-hdr, .modal-footer { display: none !important; }
+  .modal-overlay { position: static !important; background: none !important; padding: 0 !important; backdrop-filter: none !important; }
+  .modal { border: none !important; max-width: 100% !important; max-height: none !important; overflow: visible !important; }
+  .modal-body { padding: 0 !important; }
+  body, .main { margin: 0 !important; padding: 0 !important; background: white !important; }
+  #invoice-content { display: block !important; }
+}
+
+/* ── PIN KEY HOVER ── */
+.pin-key:hover { background: var(--s3) !important; border-color: var(--gold) !important; }
+
+/* ── INVOICE PRINT ── */
+@media print {
+  body * { visibility: hidden !important; }
+  #printable-invoice, #printable-invoice * { visibility: visible !important; }
+  #printable-invoice {
+    position: fixed !important; left: 0 !important; top: 0 !important;
+    width: 100% !important; padding: 20px !important;
+    font-family: Arial, sans-serif !important;
+  }
+}
