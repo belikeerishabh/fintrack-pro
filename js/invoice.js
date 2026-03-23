@@ -11,7 +11,8 @@ function openInvoiceSel() {
   // Auto-generate invoice number
   document.getElementById('inv-no').value    = generateInvoiceNumber();
   document.getElementById('inv-date').value  = today();
-  document.getElementById('inv-due-date').value = '';
+  const dueDateEl = document.getElementById('inv-due-date');
+  if (dueDateEl) dueDateEl.value = '';
   document.getElementById('inv-terms').value = '';
   populateBankDropdown('inv-bank');
 
