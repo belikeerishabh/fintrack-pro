@@ -86,18 +86,19 @@ document.getElementById('modals-container').innerHTML = `
   <div class="modal" style="max-width:700px"><div class="modal-hdr"><div class="modal-title">Generate Invoice</div><button class="modal-close" onclick="closeModal('m-inv-sel')">✕</button></div>
   <div class="modal-body">
     <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-bottom:0">
-      <div class="field"><label>Invoice Number</label><input id="inv-no" type="text" placeholder="INV-001"/></div>
+      <div class="field"><label>Invoice Number</label><input id="inv-no" type="text" placeholder="INV260301"/></div>
       <div class="field"><label>Invoice Date</label><input id="inv-date" type="date"/></div>
-      <div class="field"><label>Receive Payment In</label><select id="inv-recv-bank"></select></div>
-      <div class="field"><label>Notes / Terms</label><input id="inv-terms" type="text" placeholder="e.g. Payment due within 15 days"/></div>
+      <div class="field"><label>Due Date (optional)</label><input id="inv-due-date" type="date"/></div>
+      <div class="field"><label>Receive Payment In</label><select id="inv-bank"></select></div>
+      <div class="field" style="grid-column:1/-1"><label>Terms / Notes</label><input id="inv-terms" type="text" placeholder="e.g. Payment due within 15 days"/></div>
     </div>
     <div class="divider"></div>
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:8px">Select Work Items</div>
-    <div id="inv-work-list" style="display:flex;flex-direction:column;gap:7px;max-height:280px;overflow-y:auto"></div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:8px">Select Work Items to Include</div>
+    <div id="inv-work-list" style="display:flex;flex-direction:column;gap:7px;max-height:260px;overflow-y:auto"></div>
     <div class="divider"></div>
-    <div style="text-align:right;font-size:14px;font-weight:600">Selected: <span id="inv-sel-total" style="color:var(--gold);font-family:'Playfair Display',serif">₹0</span></div>
+    <div style="text-align:right;font-size:14px;font-weight:600">Selected Total: <span id="inv-sel-total" style="color:var(--gold);font-family:'Playfair Display',serif">₹0</span></div>
   </div>
-  <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('m-inv-sel')">Cancel</button><button class="btn btn-gold" onclick="generateInvoice()">🧾 Preview</button></div></div>
+  <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('m-inv-sel')">Cancel</button><button class="btn btn-gold" onclick="generateInvoice()">🧾 Preview Invoice</button></div></div>
 </div>
 
 <!-- INVOICE PREVIEW -->
@@ -260,5 +261,5 @@ document.getElementById('modals-container').innerHTML = `
 const _origOpenModal = openModal;
 window.openModal = function(id) {
   _origOpenModal(id);
-  ['i-bank','e-bank','w-pbank','mp-bank','inv-recv-bank'].forEach(sid => populateBankSelect(sid));
+  ['i-bank','e-bank','w-pbank','mp-bank','inv-bank'].forEach(sid => populateBankSelect(sid));
 };
