@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="theme-color" content="#0c0f1a"/>
+  <meta name="description" content="FinTrack Pro – Freelancer Finance Tracker with Google Sheets sync"/>
+  <title>FinTrack Pro</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="assets/icon-192.svg"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <!-- SheetJS for Excel import/export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<div class="app-header">
+  <div class="logo">FinTrack<span>Pro</span></div>
+  <div class="header-right">
+    <div id="syncBadge" class="sync-badge disconnected" onclick="openSettings()">☁ Not Synced</div>
+    <button class="icon-btn" onclick="openSettings()" title="Settings">⚙</button>
+  </div>
+</div>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <select id="monthSel" onchange="render()"></select>
+    <select id="yearSel" onchange="render()"></select>
+    <button class="btn btn-gold btn-sm" onclick="exportExcel()">⬇ Excel</button>
+    <label class="btn btn-outline btn-sm" style="cursor:pointer">
+      ⬆ Import Excel
+      <input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"/>
+    </label>
+    <button class="btn btn-blue btn-sm" id="sheetsSyncBtn" onclick="sheetsManualSync()" style="display:none">↻ Sync Sheets</button>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-grid">
+    <div class="sum-card inc"><div class="sum-lbl">Income</div><div class="sum-val inc" id="s-inc">₹0</div><div class="sum-sub" id="s-inc-sub">0 tx</div></div>
+    <div class="sum-card exp"><div class="sum-lbl">Expenses</div><div class="sum-val exp" id="s-exp">₹0</div><div class="sum-sub" id="s-exp-sub">0 entries</div></div>
+    <div class="sum-card inv"><div class="sum-lbl">Invested</div><div class="sum-val inv" id="s-inv">₹0</div><div class="sum-sub" id="s-inv-sub">0</div></div>
+    <div class="sum-card sav"><div class="sum-lbl">Net Savings</div><div class="sum-val sav" id="s-sav">₹0</div><div class="sum-sub" id="s-sav-sub">0% of income</div></div>
+    <div class="sum-card ast"><div class="sum-lbl">Assets</div><div class="sum-val ast" id="s-ast">₹0</div><div class="sum-sub" id="s-ast-sub">0 items</div></div>
+  </div>
+
+  <!-- ── INCOME PANEL ── -->
+  <div id="panel-income" class="panel active">
+    <div class="sec-hdr">
+      <div class="sec-title">💰 Income</div>
+      <button class="btn btn-gold btn-sm" onclick="openModal('m-income')">+ Add Income</button>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Date</th><th>From Whom</th><th>Category</th><th>Method</th><th>Account / Wallet</th><th>Notes</th><th>Amount</th><th></th></tr></thead>
+      <tbody id="tb-income"></tbody>
+    </table></div>
+  </div>
+
+  <!-- ── EXPENSE PANEL ── -->
+  <div id="panel-expense" class="panel">
+    <div class="sec-hdr">
+      <div class="sec-title">💸 Expenses</div>
+      <button class="btn btn-gold btn-sm" onclick="openModal('m-expense')">+ Add Expense</button>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Method</th><th>Account / Card</th><th>Notes</th><th>Amount</th><th></th></tr></thead>
+      <tbody id="tb-expense"></tbody>
+    </table></div>
+  </div>
+
+  <!-- ── LEDGER PANEL ── -->
+  <div id="panel-ledger" class="panel">
+    <div class="sec-hdr">
+      <div class="sec-title">📋 Client Ledger</div>
+      <div class="flex gap8 flex-wrap">
+        <button class="btn btn-outline btn-sm" onclick="openModal('m-client')">+ Client</button>
+        <button class="btn btn-gold btn-sm" id="addWorkBtn" onclick="openAddWork()" style="display:none">+ Work Entry</button>
+        <button class="btn btn-purple btn-sm" id="genInvBtn" onclick="openInvoiceSel()" style="display:none">🧾 Invoice</button>
+      </div>
+    </div>
+    <div class="ledger-layout">
+      <div>
+        <div class="client-list-label">Clients</div>
+        <div id="clientList"></div>
+      </div>
+      <div id="ledgerRight"><div class="tbl-empty"><div class="ico">👈</div>Select a client</div></div>
+    </div>
+  </div>
+
+  <!-- ── ASSETS PANEL ── -->
+  <div id="panel-assets" class="panel">
+    <div class="sec-hdr">
+      <div class="sec-title">🏆 Assets</div>
+      <button class="btn btn-gold btn-sm" onclick="openModal('m-asset')">+ Add Asset</button>
+    </div>
+    <div class="asset-grid" id="assetGrid"></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Asset</th><th>Type</th><th>Qty / Unit</th><th>Buy Price</th><th>Date</th><th>Cur Price/Unit</th><th>Cur Value</th><th>Gain/Loss</th><th></th></tr></thead>
+      <tbody id="tb-assets"></tbody>
+    </table></div>
+  </div>
+
+  <!-- ── INVEST PANEL ── -->
+  <div id="panel-invest" class="panel">
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="switchSub('inv-investments',this)">📈 Investments</button>
+      <button class="sub-tab" onclick="switchSub('inv-withdrawals',this)">🏧 Withdrawals</button>
+    </div>
+    <div id="inv-investments">
+      <div class="sec-hdr">
+        <div class="sec-title">Investments</div>
+        <button class="btn btn-gold btn-sm" onclick="openModal('m-investment')">+ Add</button>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Date</th><th>Platform / Fund</th><th>Type</th><th>Invested</th><th>Cur Value</th><th>Gain/Loss</th><th>Notes</th><th></th></tr></thead>
+        <tbody id="tb-investment"></tbody>
+      </table></div>
+    </div>
+    <div id="inv-withdrawals" style="display:none">
+      <div class="sec-hdr">
+        <div class="sec-title">Withdrawals</div>
+        <button class="btn btn-gold btn-sm" onclick="openModal('m-withdrawal')">+ Add</button>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Date</th><th>Platform</th><th>Reason</th><th>Amount</th><th>Notes</th><th></th></tr></thead>
+        <tbody id="tb-withdrawal"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ═══════════ BOTTOM NAV ═══════════ -->
+<div class="bottom-nav">
+  <button class="nav-item active" onclick="switchTab('income',this)"><span class="nav-icon">💰</span>Income</button>
+  <button class="nav-item" onclick="switchTab('expense',this)"><span class="nav-icon">💸</span>Expenses</button>
+  <button class="nav-item" onclick="switchTab('ledger',this)"><span class="nav-icon">📋</span>Ledger</button>
+  <button class="nav-item" onclick="switchTab('assets',this)"><span class="nav-icon">🏆</span>Assets</button>
+  <button class="nav-item" onclick="switchTab('invest',this)"><span class="nav-icon">📈</span>Invest</button>
+</div>
+
+<!-- ═══════════ MODALS ═══════════ -->
+<div id="modals-container"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script src="js/db.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/excel.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/income.js"></script>
+<script src="js/expenses.js"></script>
+<script src="js/ledger.js"></script>
+<script src="js/invoice.js"></script>
+<script src="js/assets.js"></script>
+<script src="js/investments.js"></script>
+<script src="js/render.js"></script>
+<script src="js/modals.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
