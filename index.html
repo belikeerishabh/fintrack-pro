@@ -17,50 +17,6 @@
 </head>
 <body>
 
-<!-- ═══════════ PIN LOCK SCREEN ═══════════ -->
-<div id="screen-pin" class="fullscreen-overlay" style="display:none">
-  <div class="pin-card">
-    <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);margin-bottom:4px">FinTrack Pro</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:28px">Enter your PIN to continue</div>
-
-    <div class="pin-dots" id="pin-dots">
-      <div class="pin-dot" id="dot-0"></div>
-      <div class="pin-dot" id="dot-1"></div>
-      <div class="pin-dot" id="dot-2"></div>
-      <div class="pin-dot" id="dot-3"></div>
-    </div>
-
-    <div id="pin-error" style="color:var(--red);font-size:12px;margin:10px 0;height:16px;text-align:center"></div>
-
-    <div class="pin-numpad">
-      <button class="pin-key" onclick="pinKey('1')">1</button>
-      <button class="pin-key" onclick="pinKey('2')">2</button>
-      <button class="pin-key" onclick="pinKey('3')">3</button>
-      <button class="pin-key" onclick="pinKey('4')">4</button>
-      <button class="pin-key" onclick="pinKey('5')">5</button>
-      <button class="pin-key" onclick="pinKey('6')">6</button>
-      <button class="pin-key" onclick="pinKey('7')">7</button>
-      <button class="pin-key" onclick="pinKey('8')">8</button>
-      <button class="pin-key" onclick="pinKey('9')">9</button>
-      <button class="pin-key pin-key-empty"></button>
-      <button class="pin-key" onclick="pinKey('0')">0</button>
-      <button class="pin-key pin-key-del" onclick="pinBackspace()">⌫</button>
-    </div>
-
-    <!-- Enter button -->
-    <button class="pin-enter-btn" onclick="submitPin()" id="pin-enter-btn">✓ Enter</button>
-
-    <button class="btn btn-outline btn-sm" style="margin-top:12px;font-size:12px;color:var(--muted)" onclick="openForgotPin()">
-      Forgot PIN?
-    </button>
-  </div>
-</div>
-
-<!-- ═══════════ FORGOT PIN SCREEN ═══════════ -->
-<div id="screen-forgot-pin" class="fullscreen-overlay" style="display:none">
-  <div class="pin-card">
-    <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--gold);margin-bottom:20px">Reset PIN</div>
-
     <!-- Step 1: Send code -->
     <div id="forgot-step-1">
       <div style="font-size:13px;color:var(--muted);margin-bottom:6px;text-align:center">A 6-digit code will be sent to</div>
