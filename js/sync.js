@@ -1,5 +1,5 @@
 /**
- * sync.js — Google Sheets OAuth + Sheets API [FIXED v3]
+ * sync.js — Google Sheets OAuth + API [v6]
  */
 
 let gToken      = null;
@@ -7,10 +7,10 @@ let tokenClient = null;
 let syncTimer   = null;
 
 const SHEET_MAPS = {
-  income:      { sheet: '💰 Income',      cols: ['date','fromWhom','category','method','account','amount','notes'], startRow: 5 },
-  expenses:    { sheet: '💸 Expenses',    cols: ['date','desc','category','method','account','amount','notes'],    startRow: 5 },
+  income:      { sheet: '💰 Income',      cols: ['date','fromWhom','category','method','bankId','amount','notes'], startRow: 5 },
+  expenses:    { sheet: '💸 Expenses',    cols: ['date','desc','category','method','bankId','amount','notes'],    startRow: 5 },
   clients:     { sheet: '👤 Clients',     cols: ['_cid','name','phone','email','address','gstin','notes'],         startRow: 5 },
-  ledger:      { sheet: '📋 Ledger',      cols: ['_lid','date','clientName','workDetail','price','invoiceNo','status','paidDate','paidMethod','notes'], startRow: 5 },
+  ledger:      { sheet: '📋 Ledger',      cols: ['_lid','date','clientName','workDetail','qty','unitPrice','price','invoiceNo','status','paidDate','paidMethod','paidBankId','notes'], startRow: 5 },
   assets:      { sheet: '🏆 Assets',      cols: ['_aid','name','type','qty','unit','buyPrice','buyDate','currentPrice','_bv','_cv','_gl','_gp','notes'], startRow: 5 },
   investments: { sheet: '📈 Investments', cols: ['_iid','date','name','type','amount','currentValue','_gl','_gp','notes'], startRow: 5 },
   withdrawals: { sheet: '🏧 Withdrawals', cols: ['_wid','date','name','reason','amount','notes'],                  startRow: 5 },
@@ -19,22 +19,15 @@ const SHEET_MAPS = {
 function dbRowToSheetRow(type, entry) {
   return SHEET_MAPS[type].cols.map(c => c.startsWith('_') ? '' : (entry[c] ?? ''));
 }
-
 function sheetRowToDbRow(type, row) {
   const obj = { id: uid() };
-  SHEET_MAPS[type].cols.forEach((c, i) => {
-    if (!c.startsWith('_')) obj[c] = row[i] ?? '';
-  });
+  SHEET_MAPS[type].cols.forEach((c, i) => { if (!c.startsWith('_')) obj[c] = row[i] ?? ''; });
   if (type === 'ledger') obj.paid = (obj.status === 'Paid');
   return obj;
 }
-
 function colLetter(n) {
-  let s = '';
-  while (n > 0) { s = String.fromCharCode(64 + (n % 26 || 26)) + s; n = Math.floor((n - 1) / 26); }
-  return s;
+  let s = ''; while (n > 0) { s = String.fromCharCode(64 + (n % 26 || 26)) + s; n = Math.floor((n - 1) / 26); } return s;
 }
-
 async function sheetsRequest(method, range, body = null) {
   const sid  = DB.settings.gSheetId;
   const base = `https://sheets.googleapis.com/v4/spreadsheets/${sid}`;
@@ -45,7 +38,6 @@ async function sheetsRequest(method, range, body = null) {
   if (body) opts.body = JSON.stringify(body);
   return (await fetch(url, opts)).json();
 }
-
 async function pushToSheets() {
   if (!gToken || !DB.settings.gSheetId) return;
   for (const type of Object.keys(SHEET_MAPS)) {
@@ -57,7 +49,6 @@ async function pushToSheets() {
   }
   setSyncBadge('connected');
 }
-
 async function loadFromSheets() {
   if (!gToken || !DB.settings.gSheetId) return;
   for (const type of Object.keys(SHEET_MAPS)) {
@@ -70,16 +61,13 @@ async function loadFromSheets() {
         .map(r => sheetRowToDbRow(type, r));
     }
   }
-  saveLocal();
-  render();
+  saveLocal(); render();
 }
-
 function scheduleSheetSync() {
   clearTimeout(syncTimer);
   setSyncBadge('syncing');
   syncTimer = setTimeout(() => pushToSheets(), 2000);
 }
-
 async function sheetsManualSync() {
   if (!gToken) { toast('Not connected to Google Sheets', 'error'); return; }
   setSyncBadge('syncing');
@@ -89,27 +77,35 @@ async function sheetsManualSync() {
   toast('✓ Synced with Google Sheets');
 }
 
-// Called by Google GSI script once it finishes loading (see index.html)
+// ── OAUTH ─────────────────────────────────────────────────────────────────────
 function gapiLoaded() {
   gapi.load('client', () => {
     gapi.client.init({}).then(() => {
-      // Auto reconnect if previously connected
+      // Auto-reconnect silently if previously connected
       if (DB.settings.gConnected && DB.settings.gClientId) {
-        buildTokenClient(DB.settings.gClientId, true);
+        buildTokenClient(true);
       }
     });
   });
 }
 
-function buildTokenClient(clientId, silent = false) {
+function buildTokenClient(silent = false) {
+  if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+    setTimeout(() => buildTokenClient(silent), 400);
+    return;
+  }
   tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: clientId,
-    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/gmail.send',
+    client_id: DB.settings.gClientId,
+    scope: [
+      'https://www.googleapis.com/auth/spreadsheets',
+      'https://www.googleapis.com/auth/gmail.send',
+    ].join(' '),
     callback: async (resp) => {
       if (resp.error) {
         toast('Sign-in failed: ' + resp.error, 'error');
         setSyncBadge('disconnected');
-        document.getElementById('sheets-status').textContent = '✗ Failed: ' + resp.error;
+        const st = document.getElementById('sheets-status');
+        if (st) st.textContent = '✗ Sign-in failed';
         return;
       }
       gToken = resp.access_token;
@@ -118,9 +114,12 @@ function buildTokenClient(clientId, silent = false) {
       setSyncBadge('syncing');
       await loadFromSheets();
       setSyncBadge('connected');
-      document.getElementById('disconnectBtn').style.display = 'inline-flex';
-      document.getElementById('sheetsSyncBtn').style.display = 'inline-flex';
-      document.getElementById('sheets-status').textContent   = '✓ Connected to Google Sheets';
+      const syncBtn  = document.getElementById('sheetsSyncBtn');
+      const discBtn  = document.getElementById('disconnectBtn');
+      const statusEl = document.getElementById('sheets-status');
+      if (syncBtn)  syncBtn.style.display  = 'inline-flex';
+      if (discBtn)  discBtn.style.display  = 'inline-flex';
+      if (statusEl) statusEl.textContent   = '✓ Connected to Google Sheets';
       toast('✓ Google Sheets connected');
     },
   });
@@ -135,8 +134,9 @@ function connectGSheets() {
   DB.settings.gClientId = cid;
   DB.settings.gSheetId  = sid;
   saveLocal();
-  document.getElementById('sheets-status').textContent = 'Opening Google sign-in…';
-  buildTokenClient(cid, false);
+  const st = document.getElementById('sheets-status');
+  if (st) st.textContent = 'Connecting…';
+  buildTokenClient(false);
 }
 
 function disconnectGSheets() {
@@ -144,17 +144,20 @@ function disconnectGSheets() {
   DB.settings.gConnected = false;
   saveLocal();
   setSyncBadge('disconnected');
-  document.getElementById('disconnectBtn').style.display = 'none';
-  document.getElementById('sheetsSyncBtn').style.display = 'none';
-  document.getElementById('sheets-status').textContent   = '';
+  const discBtn  = document.getElementById('disconnectBtn');
+  const syncBtn  = document.getElementById('sheetsSyncBtn');
+  const statusEl = document.getElementById('sheets-status');
+  if (discBtn)  discBtn.style.display  = 'none';
+  if (syncBtn)  syncBtn.style.display  = 'none';
+  if (statusEl) statusEl.textContent   = '';
   toast('Disconnected from Google Sheets');
 }
 
 function setSyncBadge(state) {
   const b = document.getElementById('syncBadge');
+  if (!b) return;
   b.className   = 'sync-badge ' + state;
-  b.textContent = state === 'connected' ? '☁ Synced' : state === 'syncing' ? '↻ Syncing…' : '☁ Not Synced';
+  b.textContent = state === 'connected' ? '☁ Synced'
+                : state === 'syncing'   ? '↻ Syncing…'
+                                        : '☁ Not Synced';
 }
-
-// Dummy — scripts now loaded in HTML directly, not dynamically
-function loadGoogleScripts() {}
