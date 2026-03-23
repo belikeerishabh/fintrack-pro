@@ -2,7 +2,7 @@
  * app.js — Boot, PIN logic, screen routing [v6 - personal use]
  */
 
-const YOUR_CLIENT_ID = '1083764118895-oimlrfv369mfrfq1fes6223qv59luml9.apps.googleusercontent.com';
+const YOUR_CLIENT_ID = ''; // Paste your Google OAuth Client ID here
 
 // ── SCREEN ROUTER ─────────────────────────────────────────────────────────────
 function showScreen(id) {
@@ -189,8 +189,8 @@ function verifyResetCode() {
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 loadLocal();
 
-// Hardcode Client ID — no setup needed
-if (!DB.settings.gClientId) {
+// Set your Client ID here once (or enter it in ⚙ Settings)
+if (YOUR_CLIENT_ID && !DB.settings.gClientId) {
   DB.settings.gClientId = YOUR_CLIENT_ID;
   saveLocal();
 }
