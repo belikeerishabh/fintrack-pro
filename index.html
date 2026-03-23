@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="assets/icon-192.svg"/>
   <link rel="stylesheet" href="css/style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -104,6 +104,17 @@
       </table></div>
     </div>
   </div>
+
+  <!-- INVOICES LIST -->
+  <div id="panel-invoices" class="panel">
+    <div class="sec-hdr">
+      <div class="sec-title">🧾 Invoices</div>
+    </div>
+    <div id="invoice-list-panel">
+      <div class="tbl-empty"><div class="ico">🧾</div>No invoices yet</div>
+    </div>
+  </div>
+
 </div>
 
 <div class="bottom-nav">
@@ -112,6 +123,7 @@
   <button class="nav-item" onclick="switchTab('ledger',this)"><span class="nav-icon">📋</span>Ledger</button>
   <button class="nav-item" onclick="switchTab('assets',this)"><span class="nav-icon">🏆</span>Assets</button>
   <button class="nav-item" onclick="switchTab('invest',this)"><span class="nav-icon">📈</span>Invest</button>
+  <button class="nav-item" onclick="switchTab('invoices',this);renderInvoiceList()"><span class="nav-icon">🧾</span>Invoices</button>
 </div>
 
 </div><!-- /screen-app -->
