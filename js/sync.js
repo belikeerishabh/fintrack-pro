@@ -1,20 +1,15 @@
 /**
- * sync.js — Google Sheets OAuth + Sheets API read/write
- *
- * HOW TO CONNECT:
- * 1. Go to https://console.cloud.google.com → create project
- * 2. Enable Google Sheets API
- * 3. Create OAuth 2.0 Web App credentials
- * 4. Add your GitHub Pages URL to Authorized JavaScript Origins
- * 5. Paste Client ID + Sheet ID in ⚙ Settings inside the app
+ * sync.js — Google Sheets OAuth + Sheets API read/write [FIXED v2]
  */
 
-let gToken    = null;
-let tokenClient = null;
-let syncTimer   = null;
+let gToken         = null;
+let tokenClient    = null;
+let syncTimer      = null;
+let gScriptsLoaded = false;
+let gApiReady      = false;
+let gGsiReady      = false;
 
-// ── Column maps: match the Excel template sheet layout ─────────────────────
-// '_xxx' columns are formula/auto-generated in Excel — we skip them (write blank)
+// ── Column maps ───────────────────────────────────────────────────────────────
 const SHEET_MAPS = {
   income:      { sheet: '💰 Income',      cols: ['date','fromWhom','category','method','account','amount','notes'], startRow: 5 },
   expenses:    { sheet: '💸 Expenses',    cols: ['date','desc','category','method','account','amount','notes'],    startRow: 5 },
@@ -25,12 +20,10 @@ const SHEET_MAPS = {
   withdrawals: { sheet: '🏧 Withdrawals', cols: ['_wid','date','name','reason','amount','notes'],                  startRow: 5 },
 };
 
-// Convert a DB entry object → array of cell values for Sheets
 function dbRowToSheetRow(type, entry) {
   return SHEET_MAPS[type].cols.map(c => c.startsWith('_') ? '' : (entry[c] ?? ''));
 }
 
-// Convert a row from Sheets → DB entry object
 function sheetRowToDbRow(type, row) {
   const obj = { id: uid() };
   SHEET_MAPS[type].cols.forEach((c, i) => {
@@ -40,14 +33,12 @@ function sheetRowToDbRow(type, row) {
   return obj;
 }
 
-// 1-based column number → letter (1→A, 27→AA …)
 function colLetter(n) {
   let s = '';
   while (n > 0) { s = String.fromCharCode(64 + (n % 26 || 26)) + s; n = Math.floor((n - 1) / 26); }
   return s;
 }
 
-// Raw Sheets API request (GET = read, PUT = write)
 async function sheetsRequest(method, range, body = null) {
   const sid  = DB.settings.gSheetId;
   const base = `https://sheets.googleapis.com/v4/spreadsheets/${sid}`;
@@ -63,14 +54,11 @@ async function sheetsRequest(method, range, body = null) {
   return r.json();
 }
 
-// Push all local data → Google Sheet
 async function pushToSheets() {
   if (!gToken || !DB.settings.gSheetId) return;
-  const types = Object.keys(SHEET_MAPS);
-  for (const type of types) {
+  for (const type of Object.keys(SHEET_MAPS)) {
     const m    = SHEET_MAPS[type];
     const rows = DB[type].map(e => dbRowToSheetRow(type, e));
-    // Pad to 200 rows so stale data in the sheet is overwritten
     while (rows.length < 200) rows.push(Array(m.cols.length).fill(''));
     const endCol = colLetter(m.cols.length);
     const range  = `${m.sheet}!B${m.startRow}:${endCol}${m.startRow + rows.length - 1}`;
@@ -79,11 +67,9 @@ async function pushToSheets() {
   setSyncBadge('connected');
 }
 
-// Pull data from Google Sheet → overwrite local DB
 async function loadFromSheets() {
   if (!gToken || !DB.settings.gSheetId) return;
-  const types = Object.keys(SHEET_MAPS);
-  for (const type of types) {
+  for (const type of Object.keys(SHEET_MAPS)) {
     const m      = SHEET_MAPS[type];
     const endCol = colLetter(m.cols.length);
     const range  = `${m.sheet}!B${m.startRow}:${endCol}${m.startRow + 299}`;
@@ -98,14 +84,12 @@ async function loadFromSheets() {
   render();
 }
 
-// Debounced auto-save (fires 2s after last edit)
 function scheduleSheetSync() {
   clearTimeout(syncTimer);
   setSyncBadge('syncing');
   syncTimer = setTimeout(() => pushToSheets(), 2000);
 }
 
-// Manual sync button
 async function sheetsManualSync() {
   if (!gToken) { toast('Not connected to Google Sheets', 'error'); return; }
   setSyncBadge('syncing');
@@ -115,31 +99,54 @@ async function sheetsManualSync() {
   toast('✓ Synced with Google Sheets');
 }
 
-// ── OAuth ───────────────────────────────────────────────────────────────────
-
+// ── Load Google scripts ALWAYS on page load ───────────────────────────────────
 function loadGoogleScripts() {
+  if (gScriptsLoaded) return;
+  gScriptsLoaded = true;
+
   const s1 = document.createElement('script');
   s1.src = 'https://apis.google.com/js/api.js';
-  s1.onload = () => gapi.load('client', () => {
-    gapi.client.init({}).then(() => {
-      if (DB.settings.gConnected && DB.settings.gClientId) {
-        initTokenClient(DB.settings.gClientId, true); // silent re-auth on page load
-      }
+  s1.onload = () => {
+    gapi.load('client', () => {
+      gapi.client.init({}).then(() => {
+        gApiReady = true;
+        tryAutoConnect();
+      });
     });
-  });
+  };
   document.head.appendChild(s1);
 
   const s2 = document.createElement('script');
   s2.src = 'https://accounts.google.com/gsi/client';
+  s2.onload = () => {
+    gGsiReady = true;
+    tryAutoConnect();
+  };
   document.head.appendChild(s2);
 }
 
-function initTokenClient(clientId, silent = false) {
+function tryAutoConnect() {
+  if (gApiReady && gGsiReady && DB.settings.gConnected && DB.settings.gClientId) {
+    buildTokenClient(DB.settings.gClientId, true);
+  }
+}
+
+// ── Build token client — retries until GSI script is ready ───────────────────
+function buildTokenClient(clientId, silent = false) {
+  if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+    setTimeout(() => buildTokenClient(clientId, silent), 500);
+    return;
+  }
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: clientId,
     scope: 'https://www.googleapis.com/auth/spreadsheets',
     callback: async (resp) => {
-      if (resp.error) { toast('Auth failed: ' + resp.error, 'error'); return; }
+      if (resp.error) {
+        toast('Sign-in failed: ' + resp.error, 'error');
+        setSyncBadge('disconnected');
+        document.getElementById('sheets-status').textContent = '✗ Sign-in failed: ' + resp.error;
+        return;
+      }
       gToken = resp.access_token;
       DB.settings.gConnected = true;
       saveLocal();
@@ -148,21 +155,39 @@ function initTokenClient(clientId, silent = false) {
       setSyncBadge('connected');
       document.getElementById('disconnectBtn').style.display = 'inline-flex';
       document.getElementById('sheetsSyncBtn').style.display = 'inline-flex';
-      document.getElementById('sheets-status').textContent  = '✓ Connected to Google Sheets';
+      document.getElementById('sheets-status').textContent   = '✓ Connected to Google Sheets';
       toast('✓ Google Sheets connected');
     },
   });
+
   tokenClient.requestAccessToken({ prompt: silent ? '' : 'consent' });
 }
 
 function connectGSheets() {
   const cid = document.getElementById('st-clientid').value.trim();
   const sid = document.getElementById('st-sheetid').value.trim();
-  if (!cid || !sid) { toast('Enter both Client ID and Sheet ID', 'error'); return; }
+  if (!cid) { toast('Enter your Google Client ID', 'error'); return; }
+  if (!sid) { toast('Enter your Google Sheet ID',  'error'); return; }
+
   DB.settings.gClientId = cid;
   DB.settings.gSheetId  = sid;
   saveLocal();
-  initTokenClient(cid, false);
+
+  document.getElementById('sheets-status').textContent = 'Opening Google sign-in…';
+
+  // Make sure scripts are loaded first, then connect
+  if (!gScriptsLoaded) {
+    loadGoogleScripts();
+    // Wait for scripts then connect
+    const wait = setInterval(() => {
+      if (gGsiReady) {
+        clearInterval(wait);
+        buildTokenClient(cid, false);
+      }
+    }, 300);
+  } else {
+    buildTokenClient(cid, false);
+  }
 }
 
 function disconnectGSheets() {
@@ -172,13 +197,13 @@ function disconnectGSheets() {
   setSyncBadge('disconnected');
   document.getElementById('disconnectBtn').style.display = 'none';
   document.getElementById('sheetsSyncBtn').style.display = 'none';
-  document.getElementById('sheets-status').textContent  = '';
+  document.getElementById('sheets-status').textContent   = '';
   toast('Disconnected from Google Sheets');
 }
 
 function setSyncBadge(state) {
   const b = document.getElementById('syncBadge');
-  b.className = 'sync-badge ' + state;
+  b.className   = 'sync-badge ' + state;
   b.textContent = state === 'connected' ? '☁ Synced'
                 : state === 'syncing'   ? '↻ Syncing…'
                                         : '☁ Not Synced';
